@@ -1,10 +1,16 @@
 import React from "react";
-import { graphql } from "react-apollo";
-import { getBookQuery } from "../queries/queries";
+import { gql } from "apollo-boost";
 
-function BookDetails({ data }) {
+import { getBookQuery } from "../queries/queries";
+import { useQuery, useApolloClient } from "@apollo/react-hooks";
+
+function BookDetails({ bookId }) {
+	const { data, loading, error } = useQuery(getBookQuery, {
+		variables: { id: bookId }
+	});
+
 	const displayBookDetails = () => {
-		let book = data.book;
+		let book = data && data.book;
 		if (book) {
 			return (
 				<div>
@@ -27,10 +33,4 @@ function BookDetails({ data }) {
 	return <div id='book-details'>{displayBookDetails()}</div>;
 }
 
-export default graphql(getBookQuery, {
-	options: ({ bookId }) => ({
-		variables: {
-			id: bookId
-		}
-	})
-})(BookDetails);
+export default BookDetails;

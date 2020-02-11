@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { graphql } from "react-apollo";
-import { getBooksQuery, deleteBook } from "../queries/queries";
-import { flowRight as compose } from "lodash";
-
+import { getBooksQuery, deleteBookMutation } from "../queries/queries";
 import BookDetail from "./BookDetails";
+import { useQuery, useMutation } from "@apollo/react-hooks";
 
-function BookList({ getBooks, deleteBook }) {
+function BookList() {
 	const [bookId, setBookId] = useState();
+	const { loading, error, data } = useQuery(getBooksQuery);
+	const [deleteBook, { objDeleted }] = useMutation(deleteBookMutation);
 
 	const deleteBookHandle = id => {
 		deleteBook({
@@ -20,10 +20,10 @@ function BookList({ getBooks, deleteBook }) {
 	};
 
 	const displayBooks = () => {
-		if (getBooks.loading) {
+		if (loading) {
 			return <div>Loading Books...</div>;
 		} else {
-			return getBooks.books.map(book => (
+			return data.books.map(book => (
 				<li key={book.id}>
 					<span onClick={e => setBookId(book.id)}>{book.name}</span>
 					<button onClick={() => deleteBookHandle(book.id)}>X</button>
@@ -40,7 +40,4 @@ function BookList({ getBooks, deleteBook }) {
 	);
 }
 
-export default compose(
-	graphql(getBooksQuery, { name: "getBooks" }),
-	graphql(deleteBook, { name: "deleteBook" })
-)(BookList);
+export default BookList;

@@ -1,21 +1,22 @@
 import React, { useState } from "react";
-import { graphql } from "react-apollo";
-import { flowRight as compose } from "lodash";
-
+import { useMutation, useQuery } from "react-apollo";
 import {
-	getAuthorsQuery,
 	addBookMutation,
+	getAuthorsQuery,
 	getBooksQuery
 } from "../queries/queries";
 
-function AddBook({ getAuthorsQuery, addBookMutation }) {
+function AddBook() {
 	const [name, setName] = useState("");
 	const [genre, setGenre] = useState("");
 	const [authorId, setAuthorId] = useState("");
 
+	const { data: authorsData, error, loading } = useQuery(getAuthorsQuery);
+	const [addBook, { newBook }] = useMutation(addBookMutation);
+
 	const submitForm = e => {
 		e.preventDefault();
-		addBookMutation({
+		addBook({
 			variables: {
 				name,
 				genre,
@@ -26,14 +27,18 @@ function AddBook({ getAuthorsQuery, addBookMutation }) {
 	};
 
 	const displayAuthors = () => {
-		if (getAuthorsQuery.loading) {
+		console.log(authorsData);
+		if (loading) {
 			return <option disabled>Loading Authors...</option>;
 		} else {
-			return getAuthorsQuery.authors.map(author => (
-				<option key={author.id} value={author.id}>
-					{author.name}
-				</option>
-			));
+			return (
+				authorsData &&
+				authorsData.authors.map(author => (
+					<option key={author.id} value={author.id}>
+						{author.name}
+					</option>
+				))
+			);
 		}
 	};
 
@@ -70,7 +75,4 @@ function AddBook({ getAuthorsQuery, addBookMutation }) {
 	);
 }
 
-export default compose(
-	graphql(getAuthorsQuery, { name: "getAuthorsQuery" }),
-	graphql(addBookMutation, { name: "addBookMutation" })
-)(AddBook);
+export default AddBook;
